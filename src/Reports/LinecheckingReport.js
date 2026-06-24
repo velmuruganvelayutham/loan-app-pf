@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Button, Container, Form, Row, Col } from 'react-bootstrap';
-import { baseURL } from "../utils/constant";
+import { baseURL,isCitywsieEnabled } from "../utils/constant";
 import { useTranslation } from "react-i18next";
 import PlaceHolder from "../components/spinner/placeholder";
 import { startOfWeek, endOfWeek } from '../FunctionsGlobal/StartDateFn';
@@ -13,6 +13,7 @@ import CurrentWeekGivenAmount from "./CurrentWeekGivenAmount";
 import ReactToPrint from 'react-to-print';
 import PendingAccounts from "./PendingAccounts.js";
 import DailyRecords from "./DailyRecords";
+import Select from "react-select";
 
 import {
     useAuth
@@ -39,13 +40,48 @@ function LinecheckingReport() {
     const [printDateRef, setPrintDateRef] = useState(startOfWeek())
     const linemanoptionRef = useRef("");
     const [show, setShow] = useState(false);
-
+    const [cityOptions, setCityOptions] = useState([]);
+    const [selectedCity, setSelectedCity] = useState(null);
+    
     const [linemannameday, setLineManNameDay] = useState("");
     const [linemanlineno, setLineManLineno] = useState("");
     const [isPrinting, setIsPrinting] = useState(false);
     const bookRef = useRef(null);
     const componentRef = useRef(null);
     const radioRef = useRef(null);
+    const cityRef = useRef(null);
+    
+      const asyncSelectRef = useRef(null);
+      useEffect(() => {
+        const preloadCities = async () => {
+          setIsLoading(true); // Start loading
+          try {
+            const token = await getToken(); // Fetch token
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            // Fetch city data
+            //const response = await axios.get(`${baseURL}/citycreate/gettwenty?q=`);
+            const response = await axios.get(`${baseURL}/citycreate/get?q=`);
+            const data = response.data.map((city) => ({
+              value: city._id,
+              label: city.cityname,
+            }));
+    
+            // Update state and cache the result
+            setCityOptions(data);
+    
+            setErrorMessage("");
+            setIsLoading(false);
+          } catch (error) {
+            console.log("error=", error);
+            setErrorMessage(t('errormessagecity'));
+            setIsLoading(false);
+          } finally {
+            setIsLoading(false); // Stop loading
+          }
+        };
+    
+        preloadCities();
+      }, [getToken]); // Add dependencies if these values could change
     useEffect(() => {
         async function fetchData() {
             setIsLoading(true);
@@ -100,6 +136,7 @@ function LinecheckingReport() {
         if (Number(reportType.current.value) !== 5) {
             setIsLoading(true);
             //alert(linemanoptionRef.current.value);
+            //alert("muru");
             if (Number(reportType.current.value) === 0) {
 
                 linecheckingreportname = "checkingdetails";
@@ -114,50 +151,52 @@ function LinecheckingReport() {
             else if (Number(reportType.current.value) === 2) {
                 setCheckingData([]);
                 linecheckingreportname = "newaccountdetails";
-                passingargument = linemanoptionRef.current.value;
+                passingargument =!isCitywsieEnabled ?linemanoptionRef.current.value:null;
                 //alert(passingargument);
             }
             else if (Number(reportType.current.value) === 4) {
                 setCheckingData([]);
                 linecheckingreportname = "weekendaccountdetails";
-                passingargument = linemanoptionRef.current.value;
+                passingargument =!isCitywsieEnabled ?linemanoptionRef.current.value:null;
             }
             else if (Number(reportType.current.value) === 3) {
                 setCheckingData([]);
                 linecheckingreportname = "currentweekgivenamount";
-                passingargument = linemanoptionRef.current.value;
+                passingargument =!isCitywsieEnabled ?linemanoptionRef.current.value:null;
             }
             else if (Number(reportType.current.value) === 6) {
 
                 setCheckingData([]);
                 linecheckingreportname = "notrunningaccounts";
-                passingargument = linemanoptionRef.current.value;
+                passingargument =!isCitywsieEnabled ?linemanoptionRef.current.value:null;
             }
             else if (Number(reportType.current.value) === 7) {
                 setCheckingData([]);
                 linecheckingreportname = "pendingaccounts";
-                passingargument = linemanoptionRef.current.value;
+                passingargument =!isCitywsieEnabled ?linemanoptionRef.current.value:null;
             }
             else if (Number(reportType.current.value) === 8) {
                 setCheckingData([]);
                 linecheckingreportname = "weekendnewdetails";
-                passingargument = linemanoptionRef.current.value;
+                passingargument =!isCitywsieEnabled ?linemanoptionRef.current.value:null;
             }
-
-
+            //alert("muru");
+            //alert(selectedCity);
+            
             const token = await getToken();
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             return (
                 axios.get(`${baseURL}/loan/${linecheckingreportname}`, {
                     params: {
-                        city_id: passingargument.toString(),
+                        city_id: selectedCity?null:passingargument.toString(),
                         fromdate: startDateRef.current.value, todate: endDateRef.current.value,
-                        bookno: Number(bookRef.current.value),
+                        bookno:!isCitywsieEnabled ? Number(bookRef.current.value) : 0,
+                        cityid: selectedCity ? selectedCity.value : null,
                         reporttype:Number(reportType.current.value),
                         document: Number(radioRef.current.querySelector('input[name="option"]:checked').value)
                     }
                 }).then((res) => {
-                    console.log(res.data);
+                    //console.log(res.data);
                     Number(reportType.current.value) === 0 ? setCheckingData(res.data) : setCheckingDetailsLine(res.data)
 
                     setIsLoading(false);
@@ -188,7 +227,16 @@ function LinecheckingReport() {
         }
 
     };
+    const handleChange = (selected) => {
+    if (selected) {
+      setSelectedCity(selected);
+      //cityRef.current.value = selected.label;
+    }
+    else {
+      setSelectedCity(selected);
+    }
 
+  };
 
     const renderLineCheckingList = (
         <Row ref={componentRef}>
@@ -202,48 +250,47 @@ function LinecheckingReport() {
     const renderpreviousweekList = (
         <Row ref={componentRef}>
             <PreviousWeekList pendingLoans={checkingDetailsLine} date={endDateRef.current.value}
-                company={company.length > 0 ? company[0].companyname : ""} isPrinting={isPrinting} reporttype={Number(reportType.current.value)} />
+                company={company.length > 0 ? company[0].companyname : ""} isPrinting={isPrinting} reporttype={Number(reportType.current.value)} cityselected={isCitywsieEnabled && selectedCity?true:false} />
         </Row>
-
     )
     const rendernewaccountList = (
         <Row ref={componentRef}>
-            <NewAccountDetails pendingLoans={checkingDetailsLine} datefrom={startDateRef.current.value} dateto={endDateRef.current.value} isPrinting={isPrinting} />
+            <NewAccountDetails pendingLoans={checkingDetailsLine} datefrom={startDateRef.current.value} dateto={endDateRef.current.value} isPrinting={isPrinting} cityselected={isCitywsieEnabled && selectedCity?true:false} />
         </Row>
     )
     const renderweekendaccountList = (
         <Row >
-            <WeekEndAccountDetails pendingLoans={checkingDetailsLine} datefrom={startDateRef.current.value} dateto={endDateRef.current.value} isPrinting={isPrinting} lineman={linemanoptionRef.current ? linemanoptionRef.current.value : ""} bond={radioRef.current ? Number(radioRef.current.querySelector('input[name="option"]:checked').value) === 4 ? true : false : false} />
+            <WeekEndAccountDetails pendingLoans={checkingDetailsLine} datefrom={startDateRef.current.value} dateto={endDateRef.current.value} isPrinting={isPrinting} lineman={linemanoptionRef.current ? linemanoptionRef.current.value : ""} bond={radioRef.current ? Number(radioRef.current.querySelector('input[name="option"]:checked').value) === 4 ? true : false : false} cityselected={isCitywsieEnabled && selectedCity?true:false} />
         </Row>
     )
     const rendercurrentweekgivenaccountList = (
         <Row ref={componentRef}>
-            <CurrentWeekGivenAmount pendingLoans={checkingDetailsLine} datefrom={startDateRef.current.value} dateto={endDateRef.current.value} isPrinting={isPrinting} lineman={linemanoptionRef.current ? linemanoptionRef.current.value : ""} bond={radioRef.current ? Number(radioRef.current.querySelector('input[name="option"]:checked').value) === 4 ? true : false : false} />
+            <CurrentWeekGivenAmount pendingLoans={checkingDetailsLine} datefrom={startDateRef.current.value} dateto={endDateRef.current.value} isPrinting={isPrinting} lineman={linemanoptionRef.current ? linemanoptionRef.current.value : ""} bond={radioRef.current ? Number(radioRef.current.querySelector('input[name="option"]:checked').value) === 4 ? true : false : false} cityselected={isCitywsieEnabled && selectedCity?true:false} />
         </Row>
     )
     const renderdailyrecords = (
         <Row ref={componentRef}>
-            <DailyRecords datefrom={startDateRef.current.value} dateto={endDateRef.current.value} linemanname={linemannameday} linamnline={linemanlineno} collectiondate={printDateRef} />
+            <DailyRecords datefrom={startDateRef.current.value} dateto={endDateRef.current.value} linemanname={linemannameday} linamnline={linemanlineno} collectiondate={printDateRef} cityselected={isCitywsieEnabled && selectedCity?true:false} />
         </Row>
     )
 
     const renderPendingAccountList = (
         <Row ref={componentRef}>
             <PendingAccounts pendingLoans={checkingDetailsLine} date={endDateRef.current.value}
-                company={company.length > 0 ? company[0].companyname : ""} isPrinting={isPrinting} bookno={bookRef.current ? Number(bookRef.current.value) : ""} />
+                company={company.length > 0 ? company[0].companyname : ""} isPrinting={isPrinting} bookno={bookRef.current ? Number(bookRef.current.value) : ""} cityselected={isCitywsieEnabled && selectedCity?true:false}/>
 
         </Row>
     )
     const renderNotRunningAccountList = (
         <Row ref={componentRef}>
             <NotRunningAccounts pendingLoans={checkingDetailsLine} date={endDateRef.current.value}
-                company={company.length > 0 ? company[0].companyname : ""} isPrinting={isPrinting} lineman={linemanoptionRef.current ? linemanoptionRef.current.value : ""} bond={radioRef.current ? Number(radioRef.current.querySelector('input[name="option"]:checked').value) === 4 ? true : false : false} />
+                company={company.length > 0 ? company[0].companyname : ""} isPrinting={isPrinting} lineman={linemanoptionRef.current ? linemanoptionRef.current.value : ""} bond={radioRef.current ? Number(radioRef.current.querySelector('input[name="option"]:checked').value) === 4 ? true : false : false} cityselected={isCitywsieEnabled && selectedCity?true:false}/>
 
         </Row>
     )
     const renderWeekEndNewAccount = (
         <Row ref={componentRef}>
-            <WeekEndNewAccounts pendingLoans={checkingDetailsLine} datefrom={startDateRef.current.value} dateto={endDateRef.current.value} isPrinting={isPrinting} lineman={linemanoptionRef.current ? linemanoptionRef.current.value : ""} bond={radioRef.current ? Number(radioRef.current.querySelector('input[name="option"]:checked').value) === 4 ? true : false : false} />
+            <WeekEndNewAccounts pendingLoans={checkingDetailsLine} datefrom={startDateRef.current.value} dateto={endDateRef.current.value} isPrinting={isPrinting} lineman={linemanoptionRef.current ? linemanoptionRef.current.value : ""} bond={radioRef.current ? Number(radioRef.current.querySelector('input[name="option"]:checked').value) === 4 ? true : false : false} cityselected={isCitywsieEnabled && selectedCity?true:false} />
         </Row>
     )
     const restoreLineman = (e) => {
@@ -307,13 +354,27 @@ function LinecheckingReport() {
             <Row>
                 <Form ref={radioRef}>
                     <Row className="hide-on-print">
-                        {show == true ? linemanshow : citynameshow}
-                        <Col xs={12} md={1} className="rounded bg-white">
+                        {show == true && !isCitywsieEnabled() ? linemanshow :! isCitywsieEnabled() ? citynameshow : null}
+                        {!isCitywsieEnabled() && <Col xs={12} md={1} className="rounded bg-white">
                             <Form.Group className="mb-3" name="bookno" border="primary" >
                                 <Form.Label>{t('bookno')}</Form.Label>{/*book no*/}
                                 <Form.Control type="number" required ref={bookRef} />
                             </Form.Group>
-                        </Col>
+                        </Col>}
+                        {isCitywsieEnabled() && <Col xs={12} md={3} className="rounded bg-white">
+                                      <Form.Group className="mb-3" name="cityname" border="primary" >
+                                        <Form.Label>{t('city')}</Form.Label>
+                                        <Select
+                                          options={cityOptions}
+                                          isLoading={isLoading}
+                                          onChange={handleChange} // Handles selection
+                                          placeholder={t('cityplaceholder')}
+                                          value={selectedCity}
+                                          isSearchable
+                                          isClearable={true}
+                                        />
+                                      </Form.Group>
+                                    </Col>}
                         <Col md={3} className="rounder bg-white">
                             <Form.Group className="mb-3" name="cityname" border="primary" >
                                 <Form.Label>{t('report')}</Form.Label>

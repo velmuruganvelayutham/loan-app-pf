@@ -8,7 +8,7 @@ import { number } from 'react-i18next/icu.macro';
 var first = [];
 
 
-const PreviousWeekList = ({ pendingLoans, date, company, isPrinting,reporttype }) => {
+const PreviousWeekList = ({ pendingLoans, date, company, isPrinting,reporttype, cityselected }) => {
     const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(1);
     const recordsPerPage = 35;
@@ -45,8 +45,9 @@ const PreviousWeekList = ({ pendingLoans, date, company, isPrinting,reporttype }
                     <div className='col-sm-7 fixed mt-5'><h4>{Number(reporttype)==1?t('previousweekdetails'):t('latependingadvanceless')}</h4></div>
                 </div>
                 <div style={{ paddingLeft: "27px", display: "flex", alignItems: "center" }} className='print-margin'>
-                    <div className='col-sm-2 fixed' >{t('line') + " : " + (pendingLoans.length > 0 ? first.lineno : "")}</div>
-                    <div className='col-sm-2 fixed'>{t("bookno") + " : " + (pendingLoans.length > 0 ? first.bookno : "")}</div>
+                    {cityselected && <div className='col-sm-4 fixed' >{t('city') + " : " + (pendingLoans.length > 0 ? first.referencecity : "")}</div>}
+                    {!cityselected && <div className='col-sm-2 fixed' >{t('line') + " : " + (pendingLoans.length > 0 ? first.lineno : "")}</div>}
+                    {!cityselected && <div className='col-sm-2 fixed'>{t("bookno") + " : " + (pendingLoans.length > 0 ? first.bookno : "")}</div>}
                     <div className='col-sm-2 fixed'>{t("date") + " : " + dateFormatdd(date)}</div>
                 </div>
 

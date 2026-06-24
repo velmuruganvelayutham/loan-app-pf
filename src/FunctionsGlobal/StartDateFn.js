@@ -25,6 +25,15 @@ export function startOfWeek() {
             daycalno = 3 - currday;
         }
     }
+    if (Number(process.env.REACT_APP_LOAN_APP_STARTDATE) === 2) {
+        if (currday < 2) {
+            // Sunday or Monday -> go to previous Tuesday
+            daycalno = -(currday + (7 - 2));
+        } else {
+            // Tuesday or later -> find the last Tuesday
+            daycalno = 2 - currday;
+        }
+    }
 
     var start = new Date(curr.setDate(curr.getDate() + daycalno));
 
@@ -90,7 +99,10 @@ export function endOfWeek() {
         }
         daycalno = (8 - currday) % 7;
     }
-
+    if (Number(process.env.REACT_APP_LOAN_APP_STARTDATE) === 2) {
+        const endDay = 0; // Sunday
+        daycalno = (endDay - currday + 7) % 7;
+    }
     var start = new Date(curr.setDate(curr.getDate() + daycalno));
 
     const datestartyearformat = new Date(start).toLocaleDateString('en-GB', {

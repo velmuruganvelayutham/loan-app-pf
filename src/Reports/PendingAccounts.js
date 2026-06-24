@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { dateFormatdd } from "../FunctionsGlobal/StartDateFn"
 var first = [];
 
-const PendingAccounts = ({ pendingLoans, date, company, isPrinting, bookno }) => {
+const PendingAccounts = ({ pendingLoans, date, company, isPrinting, bookno,cityselected }) => {
 
     const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(1);
@@ -58,11 +58,11 @@ const PendingAccounts = ({ pendingLoans, date, company, isPrinting, bookno }) =>
                     <div className='col-sm-6 fixed'><h4>{t('pendingaccounts')}</h4></div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center" }} className='print-margin'>
-                    {bookno ? <div className='col-sm-3 fixed' style={{ whiteSpace: "normal", wordWrap: "break-word" }} >{t('city') + " : " + first.city}</div> : null}
-                    <div className={bookno ? 'col-sm-3 fixed' : 'col-sm-6 fixed'}>{t('customer') + " : " + first.linemanname}</div>
-                    <div className={bookno ? 'col-sm-2 fixed' : 'col-sm-3 fixed'}>{t('line') + " : " + (pendingLoans.length > 0 ? first.lineno : "")}</div>
-                    {bookno ? <div className='col-sm-2 fixed'>{t("bookno") + " : " + (pendingLoans.length > 0 ? first.bookno : "")}</div> : null}
-                    <div className={bookno ? 'col-sm-2 fixed' : 'col-sm-3 fixed'}>{t("date") + " : " + dateFormatdd(date)}</div>
+                    {bookno  || cityselected ? <div className='col-sm-4 fixed' style={{ whiteSpace: "normal", wordWrap: "break-word" }} >{t('city') + " : " + first.city}</div> : null}
+                    {!cityselected && <div className={bookno  ? 'col-sm-3 fixed' : 'col-sm-6 fixed'}>{t('customer') + " : " + first.linemanname}</div>}
+                    {!cityselected && <div className={bookno ? 'col-sm-2 fixed' : 'col-sm-3 fixed'}>{t('line') + " : " + (pendingLoans.length > 0 ? first.lineno : "")}</div>}
+                    {bookno && !cityselected ? <div className='col-sm-2 fixed'>{t("bookno") + " : " + (pendingLoans.length > 0 ? first.bookno : "")}</div> : null}
+                    <div className={bookno || cityselected ? 'col-sm-2 fixed' : 'col-sm-3 fixed'}>{t("date") + " : " + dateFormatdd(date)}</div>
                 </div>
                 <Table className='table table-bordered border-dark linecheckingtable ' style={{ width: "103%" }}  >
                     <thead>

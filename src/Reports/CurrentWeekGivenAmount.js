@@ -3,11 +3,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Pagination } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { dateFormatdd } from "../FunctionsGlobal/StartDateFn"
+import { isCitywsieEnabled } from '../utils/constant';
 
 var first = [];
 
 
-const CurrentWeekGivenAmount = ({ pendingLoans, datefrom, dateto, isPrinting, lineman, bond }) => {
+const CurrentWeekGivenAmount = ({ pendingLoans, datefrom, dateto, isPrinting, lineman, bond,cityselected }) => {
 
     const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(1);
@@ -51,6 +52,12 @@ const CurrentWeekGivenAmount = ({ pendingLoans, datefrom, dateto, isPrinting, li
                 </div>
                 {lineman !== "" && <div style={{ display: "flex", paddingLeft: "10px" }}>
                     <div className='col-sm-4 fixed' style={{ paddingLeft: "20px" }}>{t('line') + " : " + (pendingLoans.length > 0 ? first.lineno : "")}</div>
+                    <div className='col-sm-4 fixed'>{t("lineman") + " : " + (pendingLoans.length > 0 ? first.linemanname : "")}</div>
+                    <div className='col-sm-4 fixed fw-bold'>{t("date") + " : " + dateFormatdd(datefrom) + " - " + dateFormatdd(dateto)}</div>
+                </div>
+                }
+                {cityselected && <div style={{ display: "flex", paddingLeft: "10px" }}>
+                    <div className='col-sm-4 fixed' style={{ paddingLeft: "20px" }}>{t('city') + " : " + (pendingLoans.length > 0 ? first.city : "")}</div>
                     <div className='col-sm-4 fixed'>{t("lineman") + " : " + (pendingLoans.length > 0 ? first.linemanname : "")}</div>
                     <div className='col-sm-4 fixed fw-bold'>{t("date") + " : " + dateFormatdd(datefrom) + " - " + dateFormatdd(dateto)}</div>
                 </div>

@@ -7,7 +7,7 @@ import { dateFormatdd } from "../FunctionsGlobal/StartDateFn"
 var first = [];
 
 
-const NewAccountDetails = ({ pendingLoans, datefrom, dateto, isPrinting }) => {
+const NewAccountDetails = ({ pendingLoans, datefrom, dateto, isPrinting, cityselected}) => {
 
     const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(1);
@@ -27,8 +27,12 @@ const NewAccountDetails = ({ pendingLoans, datefrom, dateto, isPrinting }) => {
                     <div className='col-sm-12 fixed mt-5 fw-bold text-center' ><h4>{t('newaccountaddress')}</h4></div>
                 </div>
                 <div style={{ paddingLeft: "27px", display: "flex", alignItems: "center"}} className='print-margin' >
-                    <div className='col-sm-4 fixed' >{t('line') + " : " + (pendingLoans.length > 0 ? first.lineno : "")}</div>
-                    <div className='flex col-sm-4 fixed' >{t("lineman") + " : " + (pendingLoans.length > 0 ? first.linemanname : "")}</div>
+                    {cityselected && <div className='col-sm-4 fixed' >{t('city') + " : " + (pendingLoans.length>0?first.city:'')}</div>
+                    }
+                    {!cityselected && <div className='col-sm-4 fixed' >{t('line') + " : " + (pendingLoans.length > 0 ? first.lineno : "")}</div>
+                    }
+                    {!cityselected && <div className='flex col-sm-4 fixed' >{t("lineman") + " : " + (pendingLoans.length > 0 ? first.linemanname : "")}</div>
+                    }
                     <div className='flex col-sm-4 fixed fw-bold' >{t("date") + " : " + dateFormatdd(datefrom) + " - " + dateFormatdd(dateto)}</div>
                 </div>
                 <Table className='table text-center fs-6 table-bordered border-dark'  >

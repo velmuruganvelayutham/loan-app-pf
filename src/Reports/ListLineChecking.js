@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Pagination } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { dateFormatdd } from "../FunctionsGlobal/StartDateFn"
+import { isCitywsieEnabled } from '../utils/constant';
 var first = [];
 
 const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lineno, bond }) => {
@@ -135,11 +136,12 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
           </div>
           <div className='col-sm-6 fixed'><h4>{t('linechecking')}</h4></div>
         </div>
-        {lineno !== "" &&
+        {lineno !== "" || isCitywsieEnabled &&
           <div style={{ display: "flex", alignItems: "center" }} className='col-sm-12 fixed linechecking-print-margin'>
-            {bookno !== "" && (<div className='col-sm-3 fixed' style={{ whiteSpace: "normal", wordWrap: "break-word" }} >{t('city') + " : " + first.city}</div>)}
-
+            {bookno !== "" || isCitywsieEnabled && (<div className='col-sm-3 fixed' style={{ whiteSpace: "normal", wordWrap: "break-word" }} >{t('city') + " : " + first.city}</div>)}
+             {bookno !== "" && (
             <div className={bookno !== '' ? 'col-sm-3 fixed' : 'col-sm-6 fixed'}>{t('customer') + " : " + first.linemanname}</div>
+            )}
             <div className='col-sm-2 fixed'>{t('line') + " : " + (pendingLoans.length > 0 ? first.lineno : "")}</div>
             {bookno !== "" && (<div className='col-sm-2 fixed'>{t("bookno") + " : " + (pendingLoans.length > 0 ? first.bookno : "")}</div>)}
             <div className='col-sm-2 fixed'>{t("date") + " : " + dateFormatdd(date)}</div>
