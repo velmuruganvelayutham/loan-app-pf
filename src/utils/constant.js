@@ -28,7 +28,7 @@ export const getDefaultWeekCount = () => {
 
 }
 export const isCitywsieEnabled = () => {
-    return false;
+    return true;
 }
 
 export const isReadOnlyLoanNo = () => {
