@@ -102,6 +102,14 @@ export function endOfWeek() {
     if (Number(process.env.REACT_APP_LOAN_APP_STARTDATE) === 2) {
         const endDay = 0; // Sunday
         daycalno = (endDay - currday + 7) % 7;
+        if (currday === 1) {
+            // Monday -> yesterday (previous Sunday)
+            daycalno = -1;
+        } else {
+            // Tuesday to Sunday -> upcoming/current Sunday
+            daycalno = (0 - currday + 7) % 7;
+        }
+
     }
     var start = new Date(curr.setDate(curr.getDate() + daycalno));
 
