@@ -23,12 +23,16 @@ const PreviousWeekList = ({ pendingLoans, date, company, isPrinting,reporttype, 
         const totalcredit = pendingLoans.reduce((previousval, currentval) => {
             return previousval + currentval.collectedamount;
         }, 0);
-        return { totaldue, totalcredit }
+        const totalinstallmentamount = pendingLoans.reduce((previousval, currentval) => {
+            return previousval + currentval.totalcollected;
+        }, 0);
+        return { totaldue, totalcredit, totalinstallmentamount }
     }, [pendingLoans])
 
     const renderPage = (page) => {
         var pagetotaldue = 0;
         var pagetotalcredit = 0;
+        var pagetotalinstallmentamount = 0;
         var totalinstallment = 0;
 
         const startIndex = (page - 1) * recordsPerPage;
@@ -95,6 +99,7 @@ const PreviousWeekList = ({ pendingLoans, date, company, isPrinting,reporttype, 
                                     pagetotaldue = pagetotaldue + customer.dueamount;
                                     pagetotalcredit = pagetotalcredit + customer.collectedamount;
                                     totalinstallment = parseInt((customer.totalcollected) / customer.dueamount);
+                                   pagetotalinstallmentamount = pagetotalinstallmentamount + (customer.totalcollected);
                                     return (
                                         <tr className='previousweek'>
                                             
@@ -107,7 +112,7 @@ const PreviousWeekList = ({ pendingLoans, date, company, isPrinting,reporttype, 
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.dueamount}</td>
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{totalinstallment}</td>
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.receiptnumber}</td>
-                                            <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.collectedamount}</td>
+                                            <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.totalcollected}</td>
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.collectedamount}</td>
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.referencecity}</td>
                                             {Number(reporttype)==9 && <td style={{ fontSize: "11px" }} className='text-nowrap overflow-hidden'>{Number(customer.receipttype)==1?t('advanceless'):t('latepending')}</td>}
@@ -132,7 +137,7 @@ const PreviousWeekList = ({ pendingLoans, date, company, isPrinting,reporttype, 
                             <td className='fw-bold' style={{ fontSize: "12px" }}>{pagetotaldue}</td>
                             <td></td>
                             <td></td>
-                            <td className='fw-bold' style={{ fontSize: "12px" }}>{pagetotalcredit}</td>
+                            <td className='fw-bold' style={{ fontSize: "12px" }}>{pagetotalinstallmentamount}</td>
                             <td className='fw-bold' style={{ fontSize: "12px" }}>{pagetotalcredit}</td>
                             <td></td>
                             {Number(reporttype)==9 &&<td></td>}
@@ -153,7 +158,7 @@ const PreviousWeekList = ({ pendingLoans, date, company, isPrinting,reporttype, 
                             <td className='fw-bold' style={{ fontSize: "12px" }}>{totals.totaldue}</td>
                             <td></td>
                             <td></td>
-                            <td className='fw-bold' style={{ fontSize: "12px" }}>{totals.totalcredit}</td>
+                            <td className='fw-bold' style={{ fontSize: "12px" }}>{totals.totalinstallmentamount}</td>
                             <td className='fw-bold' style={{ fontSize: "12px" }}>{totals.totalcredit}</td>
                             <td></td>
                             {Number(reporttype)==9 && <td></td>}
