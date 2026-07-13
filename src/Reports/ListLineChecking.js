@@ -10,7 +10,8 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
 
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 35;
+  const fixedRecordsPerPage = 25;
+  const isCitywiseModeEnabled = isCitywsieEnabled();
   var duependingcheck = 0;
   var duependingweekcheck = 0;
   var duependingcheckval = 0;
@@ -23,7 +24,83 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
 
 
 
-  const totalPages = useMemo(() => Math.ceil(pendingLoans.length / recordsPerPage), [pendingLoans]);
+  const paginatedLoans = useMemo(() => {
+    if (!isCitywiseModeEnabled) {
+      const pages = [];
+      for (let i = 0; i < pendingLoans.length; i += fixedRecordsPerPage) {
+        pages.push(pendingLoans.slice(i, i + fixedRecordsPerPage));
+      }
+      return pages.length > 0 ? pages : [[]];
+    }
+
+    // Keep some headroom for report header + per-page total row.
+    const PAGE_CAPACITY_UNITS = fixedRecordsPerPage - 1.0;
+    const ADDRESS_CHARS_PER_LINE = 38;
+    const EXTRA_LINE_WEIGHT = 0.35;
+    const SOFT_OVERFLOW_UNITS = 0.45;
+    const MIN_ROWS_TARGET_PER_PAGE = 24;
+    const MAX_ROWS_PER_PAGE = fixedRecordsPerPage;
+    const pages = [];
+    let currentPageRows = [];
+    let currentPageUnits = 0;
+
+    pendingLoans.forEach((loan) => {
+      const address = (loan?.address || "").trim();
+      const addressWrappedLines = Math.max(
+        address.length > 0 ? Math.ceil(address.length / ADDRESS_CHARS_PER_LINE) : 1,
+        address.length > 0 ? address.split("\n").length : 1
+      );
+      const mobileWrappedLines = loan?.mobileno
+        ? loan.mobileno.toString().split("\n").length
+        : 1;
+
+      // Longer wrapped text consumes more print height; use weighted row units.
+      const rowUnits = Math.max(
+        1,
+        1 + (Math.min(addressWrappedLines, 4) - 1) * EXTRA_LINE_WEIGHT,
+        1 + (Math.min(mobileWrappedLines, 4) - 1) * EXTRA_LINE_WEIGHT
+      );
+
+      const nextUnits = currentPageUnits + rowUnits;
+      const canUseSoftOverflow = nextUnits <= PAGE_CAPACITY_UNITS + SOFT_OVERFLOW_UNITS;
+      const canUseRowCountFill =
+        currentPageRows.length < MIN_ROWS_TARGET_PER_PAGE &&
+        currentPageRows.length < MAX_ROWS_PER_PAGE &&
+        rowUnits <= 1.2;
+      const shouldBreakPage =
+        currentPageRows.length > 0 &&
+        nextUnits > PAGE_CAPACITY_UNITS &&
+        !canUseSoftOverflow &&
+        !canUseRowCountFill;
+
+      if (shouldBreakPage) {
+        pages.push(currentPageRows);
+        currentPageRows = [loan];
+        currentPageUnits = rowUnits;
+      } else {
+        currentPageRows.push(loan);
+        currentPageUnits = nextUnits;
+      }
+    });
+
+    if (currentPageRows.length > 0) {
+      pages.push(currentPageRows);
+    }
+
+    return pages.length > 0 ? pages : [[]];
+  }, [pendingLoans, fixedRecordsPerPage, isCitywiseModeEnabled]);
+
+  const pageStartIndexes = useMemo(() => {
+    const starts = [];
+    let runningIndex = 0;
+    paginatedLoans.forEach((pageRows) => {
+      starts.push(runningIndex);
+      runningIndex += pageRows.length;
+    });
+    return starts;
+  }, [paginatedLoans]);
+
+  const totalPages = paginatedLoans.length;
   const totals = useMemo(() => {
     const total = pendingLoans.reduce((acc, item) => acc + (item.totalamount - item.collectedtotal), 0);
     const totalDuePending = pendingLoans.reduce((previous, current) => {
@@ -113,9 +190,8 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
 
   const renderPage = (page) => {
 
-    const startIndex = (page - 1) * recordsPerPage;
-
-    const pageRecords = pendingLoans.slice(startIndex, startIndex + recordsPerPage);
+    const pageRecords = paginatedLoans[page - 1] || [];
+    const startIndex = pageStartIndexes[page - 1] || 0;
     const isLastPage = page === totalPages;
     var pagetotal = 0;
     var pendingtotal = 0;
@@ -136,9 +212,9 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
           </div>
           <div className='col-sm-6 fixed'><h4>{t('linechecking')}</h4></div>
         </div>
-        {lineno !== "" || isCitywsieEnabled &&
+        {(lineno !== "" || isCitywiseModeEnabled) &&
           <div style={{ display: "flex", alignItems: "center" }} className='col-sm-12 fixed linechecking-print-margin'>
-            {bookno !== "" || isCitywsieEnabled && (<div className='col-sm-3 fixed' style={{ whiteSpace: "normal", wordWrap: "break-word" }} >{t('city') + " : " + first.city}</div>)}
+            {(bookno !== "" || isCitywiseModeEnabled) && (<div className='col-sm-3 fixed' style={{ whiteSpace: "normal", wordWrap: "break-word" }} >{t('city') + " : " + first.city}</div>)}
              {bookno !== "" && (
             <div className={bookno !== '' ? 'col-sm-3 fixed' : 'col-sm-6 fixed'}>{t('customer') + " : " + first.linemanname}</div>
             )}
@@ -168,7 +244,7 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
               <th style={{ fontSize: "11px", width: "8%" }} >
                 {t('fathername')}
               </th>
-              {bond ? <th style={{ fontSize: "10px", width: "6%" }}>{t('bond')}</th> :
+              {bond ? <th style={{ fontSize: "10px", width: "7%" }}>{t('bond')}</th> :
                 <th style={{ fontSize: "11px", width: "8.5%" }}>{t('address')}</th>}
 
               {bond ? <th style={{ fontSize: "10px", width: "4%" }}>{t('cheque')}</th> :
@@ -176,8 +252,8 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
 
               {bond && <th style={{ fontSize: "11px", width: "5%" }}>{t('city')}</th>}
 
-              <th style={{ fontSize: "9px", width: "5%" }}>
-                {t('enddate')}
+              <th style={{ fontSize: "9px", width: "4%",textAlign: "center" }} >
+              {isCitywiseModeEnabled ? t('dueshort') : t('enddate')}
               </th>
               <th style={{ fontSize: "11px", width: "6%", textAlign: "center" }}>
                 {t('loanamount')}
@@ -257,10 +333,15 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
                       <td style={{ fontSize: "11px", width: "1%" }} >{customer.relationtype == 0 ? t('fathershort') : t('husbandshort')}</td>
                       <td style={{ fontSize: "11px", width: "12%" }} className='text-nowrap overflow-hidden'>{customer.fathername}</td>
 
-                      <td style={{ fontSize: "11px", overflow: "hidden" }} className='text-nowrap overflow-hidden'>  {bond ? customer.bond : customer.address}</td>
+                      <td style={{fontSize: "10px",
+              whiteSpace: isCitywiseModeEnabled ? "normal" : "nowrap",
+              overflow: isCitywiseModeEnabled ? "visible" : "hidden",
+    wordBreak: "normal",
+    overflowWrap: "break-word",
+     }} >  {bond ? customer.bond : customer.address.trim()}</td>
                       {bond ? <td style={{ fontSize: "11px" }}>{customer.cheque}</td> : <td style={{ fontSize: "12px", wordWrap: "break-word", padding: "0px", margin: "0px", whiteSpace: "normal", minHeight: customer.mobileno && customer.mobileno.toString().split('\n').length > 1 ? "auto" : "15px", maxHeight: customer.mobileno && customer.mobileno.toString().split('\n').length > 1 ? "60px" : "auto" }}>{customer.mobileno}</td>}
                       {bond && <td style={{ fontSize: "11px"}} className='text-nowrap overflow-hidden'>{customer.referencecity}</td>}
-                      <td style={{ fontSize: "11px" }} className='text-nowrap overflow-hidden'>{dateFormatdd(customer.finisheddate)}</td>
+                        <td style={{ fontSize: "11px" }} className='text-nowrap overflow-hidden'>{isCitywiseModeEnabled ? customer.dueamount : dateFormatdd(customer.finisheddate)}</td>
                       <td style={{ fontSize: "11px", textAlign: "center" }} className='text-nowrap overflow-hidden'>{pending}</td>
                       <td style={{ fontSize: "11px", textAlign: "center" }} className='text-nowrap overflow-hidden'>{duepending > 0 ? duepending : ""}</td>
                       {

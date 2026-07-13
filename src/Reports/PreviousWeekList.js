@@ -1,4 +1,5 @@
 import React, { Fragment, useState, useMemo } from 'react'
+import { isCitywsieEnabled } from '../utils/constant'
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Pagination } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
@@ -74,7 +75,7 @@ const PreviousWeekList = ({ pendingLoans, date, company, isPrinting,reporttype, 
                                 {t('customer')}
                             </th>:<th style={{ fontSize: "11px",width:"12%" }}>{t('customer')}</th>}
                             <th style={{ fontSize: "10px",width:"8%" }}>
-                                {t('due')}
+                                {isCitywsieEnabled ? t('enddate') : t('due')}
                             </th>
                             <th style={{ fontSize: "11px",width:"7%" }}>
                                 {t('dueno')}
@@ -109,7 +110,7 @@ const PreviousWeekList = ({ pendingLoans, date, company, isPrinting,reporttype, 
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.weeknoreceipt}</td>
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.loannumber}</td>
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.customer}</td>
-                                            <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.dueamount}</td>
+                                            <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{isCitywsieEnabled?dateFormatdd(customer.finisheddate):customer.dueamount}</td>
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{totalinstallment}</td>
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.receiptnumber}</td>
                                             <td style={{ fontSize: "12px" }} className='text-nowrap overflow-hidden'>{customer.totalcollected}</td>

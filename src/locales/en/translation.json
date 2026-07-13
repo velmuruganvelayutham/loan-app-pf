@@ -240,7 +240,8 @@
   "assignedlinemen":"Assigned Linemen",
   "lastreceiptdate":"L.RDate",
   "lessthan":"is less than due amount",
-  "amountadjusted":"Amount adjusted to LoanAmount"
+  "amountadjusted":"Amount adjusted to LoanAmount",
+  "citywiselist": "City Wise List"
 
 
 }

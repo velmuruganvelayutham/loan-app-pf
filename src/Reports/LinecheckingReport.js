@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import PlaceHolder from "../components/spinner/placeholder";
 import { startOfWeek, endOfWeek } from '../FunctionsGlobal/StartDateFn';
 import ListLineChecking from "./ListLineChecking";
+import CitywiseList from "./CitywiseList";
 import PreviousWeekList from "./PreviousWeekList"
 import NewAccountDetails from "./NewAccountDetails";
 import WeekEndAccountDetails from "./WeekEndAccountDetails";
@@ -137,7 +138,7 @@ function LinecheckingReport() {
             setIsLoading(true);
             //alert(linemanoptionRef.current.value);
             //alert("muru");
-            if (Number(reportType.current.value) === 0) {
+            if (Number(reportType.current.value) === 0 || Number(reportType.current.value) === 10) {
 
                 linecheckingreportname = "checkingdetails";
                 passingargument = line;
@@ -197,7 +198,7 @@ function LinecheckingReport() {
                     }
                 }).then((res) => {
                     //console.log(res.data);
-                    Number(reportType.current.value) === 0 ? setCheckingData(res.data) : setCheckingDetailsLine(res.data)
+                    Number(reportType.current.value) === 0 || Number(reportType.current.value) === 10 ? setCheckingData(res.data) : setCheckingDetailsLine(res.data)
 
                     setIsLoading(false);
 
@@ -291,6 +292,11 @@ function LinecheckingReport() {
     const renderWeekEndNewAccount = (
         <Row ref={componentRef}>
             <WeekEndNewAccounts pendingLoans={checkingDetailsLine} datefrom={startDateRef.current.value} dateto={endDateRef.current.value} isPrinting={isPrinting} lineman={linemanoptionRef.current ? linemanoptionRef.current.value : ""} bond={radioRef.current ? Number(radioRef.current.querySelector('input[name="option"]:checked').value) === 4 ? true : false : false} cityselected={isCitywsieEnabled && selectedCity?true:false} />
+        </Row>
+    )
+    const rendercitywsielist = (
+        <Row ref={componentRef}>
+            <CitywiseList pendingLoans={Number(reportType.current.value) === 10 ? checkingData : checkingDetailsLine}  date={printDateRef} isPrinting={isPrinting} company={company.length > 0 ? company[0].companyname : ""}  cityselected={isCitywsieEnabled && selectedCity?true:false} />
         </Row>
     )
     const restoreLineman = (e) => {
@@ -390,6 +396,8 @@ function LinecheckingReport() {
                                     <option value={7}>{t('pendingaccounts')}</option>
                                     <option value={8}>{t('weenkendnewaccounts')}</option>
                                     <option value={9}>{t('latependingadvanceless')}</option>
+                                    <option value={10}>{t('citywiselist')}</option>
+
                                 </Form.Select>
                             </Form.Group>
                         </Col>
@@ -462,7 +470,9 @@ function LinecheckingReport() {
                                             renderweekendaccountList : Number(reportType.current.value) === 6 ?
                                                 renderNotRunningAccountList : Number(reportType.current.value) === 7 ?
                                                     renderPendingAccountList : Number(reportType.current.value) === 8 ?
-                                                        renderWeekEndNewAccount : renderdailyrecords}
+                                                        renderWeekEndNewAccount :Number(reportType.current.value) === 9?
+                                                         renderdailyrecords:Number(reportType.current.value) === 10?
+                                                         rendercitywsielist:null}
                         {errorMessage && <div className="error">{errorMessage}</div>}
                     </Row>
 
