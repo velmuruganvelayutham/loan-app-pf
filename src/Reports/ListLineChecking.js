@@ -16,8 +16,7 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
   var duependingweekcheck = 0;
   var duependingcheckval = 0;
   var pendingweekcheck = 0;
-
-
+  
   var serialno = 0;
 
   //first = records.length > 0 ? pendingLoans[0] : "";
@@ -103,6 +102,7 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
   const totalPages = paginatedLoans.length;
   const totals = useMemo(() => {
     const total = pendingLoans.reduce((acc, item) => acc + (item.totalamount - item.collectedtotal), 0);
+    const totaldueamount = pendingLoans.reduce((acc, item) => acc+item.dueamount, 0);
     const totalDuePending = pendingLoans.reduce((previous, current) => {
       if (current.collectedamountdate > 0 && current.collectedamountdate >= current.dueamount || current.topay <= 0 || current.finisheddatepending == 1) {
         return previous + 0;
@@ -185,7 +185,7 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
         return previousval + 0;
       }
     }, 0);
-    return { total, totalDuePending, totalPendingWeek };
+    return { total, totalDuePending, totalPendingWeek ,totaldueamount};
   }, [pendingLoans]);
 
   const renderPage = (page) => {
@@ -199,7 +199,7 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
     var duepending = 0;
     var pendingweek = 0;
     var pendingweektotal = 0;
-
+    var pageduetotal = 0;
     first = pageRecords.length > 0 ? pendingLoans[0] : "";
     serialno = startIndex;
 
@@ -321,7 +321,7 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
                     pendingweek = pendingweek
                   }
                   pendingweektotal = pendingweektotal + parseFloat(pendingweek);
-
+                  pageduetotal = pageduetotal + customer.dueamount;
 
                   return (
                     <tr className='linechecking'>
@@ -373,9 +373,9 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
               <td></td>
               <td ></td>
               <td ></td>
-              <td ></td>
+              <td className='fw-bold' style={{ fontSize: "10px", textAlign: "center" }}>{isCitywiseModeEnabled?t('pagetotal'):""}</td>
               {bond && <td></td>}
-              <td className='fw-bold' style={{ fontSize: "10px", textAlign: "center" }}>{t('pagetotal')}</td>
+              <td className='fw-bold' style={{ fontSize: "10px", textAlign: "center" }}>{isCitywiseModeEnabled?pageduetotal: t('pagetotal')}</td>
               <td className='fw-bold' style={{ fontSize: "11px", textAlign: "center" }}>{pagetotal}</td>
               <td className='fw-bold' style={{ fontSize: "11px", textAlign: "center" }}>{pendingtotal}</td>
               <td className='fw-bold' style={{ fontSize: "11px", textAlign: "center" }}>{pendingweektotal}</td>
@@ -394,9 +394,9 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
               <td></td>
               <td></td>
               <td></td>
-              <td></td>
+              <td className='fw-bold' style={{ fontSize: "11px", textAlign: "center" }}>{isCitywiseModeEnabled?t('totalcount'):""}</td>
               {bond && <td></td>}
-              <td className='fw-bold' style={{ fontSize: "13px", textAlign: "center" }}>{t('totalcount')}</td>
+              <td className='fw-bold' style={{ fontSize: "13px", textAlign: "center" }}>{isCitywiseModeEnabled?totals.totaldueamount: t('totalcount')}</td>
               <td className='fw-bold' style={{ fontSize: "13px", textAlign: "center" }}>{totals.total}</td>
               <td className='fw-bold' style={{ fontSize: "13px", textAlign: "center" }}>{totals.totalDuePending}</td>
               <td className='fw-bold' style={{ fontSize: "13px", textAlign: "center" }}>{totals.totalPendingWeek.toFixed(2)}</td>
