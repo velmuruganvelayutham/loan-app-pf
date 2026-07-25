@@ -470,7 +470,7 @@ function LinecheckingReport() {
                                             renderweekendaccountList : Number(reportType.current.value) === 6 ?
                                                 renderNotRunningAccountList : Number(reportType.current.value) === 7 ?
                                                     renderPendingAccountList : Number(reportType.current.value) === 8 ?
-                                                        renderWeekEndNewAccount :Number(reportType.current.value) === 9?
+                                                        renderWeekEndNewAccount :Number(reportType.current.value) === 5?
                                                          renderdailyrecords:Number(reportType.current.value) === 10?
                                                          rendercitywsielist:null}
                         {errorMessage && <div className="error">{errorMessage}</div>}

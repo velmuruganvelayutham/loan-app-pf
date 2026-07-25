@@ -32,8 +32,8 @@ const DailyRecords = ({ datefrom, dateto, linemanname, linamnline, collectiondat
             <div style={{ paddingLeft: "28px", display: "flex", alignItems: "center" }}>
                 <div className='fixed mt-3 fw-bold' style={{ width: "25%" }}>{t('customer') + " :" + linemanname}</div>
                 <div className='fixed mt-3 fw-bold' style={{ width: "15%" }}>{t('line') + " :" + linamnline}</div>
-                <div className='fixed mt-3 fw-bold' style={{ width: "29%" }}>{t("weekdate") + " :" + dateFormatdd(datefrom) + "-" + dateFormatdd(dateto)}</div>
-                <div className='fixed mt-3 fw-bold' style={{ width: "31%" }}>{t("collectiondate") + " :" + dateFormatdd(collectiondate) + d}</div>
+                <div className='fixed mt-3 fw-bold' style={{ width: "29%",fontSize:"10px" }}>{t("weekdate") + " :" + dateFormatdd(datefrom) + "-" + dateFormatdd(dateto)}</div>
+                <div className='fixed mt-3 fw-bold' style={{ width: "31%", fontSize: "10px" }}>{t("collectiondate") + " :" + dateFormatdd(collectiondate) + d}</div>
             </div>
             <Table className='table  text-center table-bordered border-dark linecheckingtable' >
                 <thead >
@@ -115,7 +115,7 @@ const DailyRecords = ({ datefrom, dateto, linemanname, linamnline, collectiondat
                     <tr className='dailyrecordsfinshedtotal'>
                         <td style={{ borderLeft: "0", borderRight: "0", borderBottom: "2px solid black", borderTop: "2px solid black" }}></td>
                         <td style={{ borderLeft: "0", borderRight: "0", borderBottom: "2px solid black", borderTop: "2px solid black" }}></td>
-                        <td style={{ borderLeft: "0", borderRight: "0", borderBottom: "2px solid black", borderTop: "2px solid black" }}>{(t('total'))}</td>
+                        <td style={{ borderLeft: "0", borderRight: "0", borderBottom: "2px solid black", borderTop: "2px solid black",fontSize:"10px" }}>{(t('total'))}</td>
                         <td style={{ borderLeft: "0", borderRight: "1px solid black", borderBottom: "2px solid black", borderTop: "2px solid black" }}></td>
                         <td style={{ borderLeft: "0", borderRight: "1px solid black", borderBottom: "2px solid black", borderTop: "2px solid black" }}></td>
                         <td style={{ borderLeft: "0", borderRight: "1px solid black", borderBottom: "2px solid black", borderTop: "2px solid black" }}></td>
@@ -231,8 +231,7 @@ const DailyRecords = ({ datefrom, dateto, linemanname, linamnline, collectiondat
                 </tbody>
             </Table>
             {/*finished account*/}
-            <div className='col-sm-12 text-center fixed' ></div>
-            <Table className='table  text-center table-bordered border-dark ' style={{ tableLayout: "fixed", width: "100%" }}>
+            <Table className='table  text-center table-bordered border-dark dailyrecords-finished-table' style={{ tableLayout: "fixed", width: "100%" }}>
                 <colgroup>
                     <col style={{ width: "1.5%", fontSize: "12px" }} />
 
@@ -435,8 +434,8 @@ const DailyRecords = ({ datefrom, dateto, linemanname, linamnline, collectiondat
                     </tr>
 
                 </tbody>
-                <div style={{ marginTop: "28px" }}></div>
             </Table>
+            <div style={{ marginTop: "28px" }}></div>
             {/* daily collection list*/}
             <div style={{ paddingLeft: "28px", display: "flex", alignItems: "center" }}>
                 <div className='fixed fw-bold pt-5' style={{ width: "25%" }}>{t('customer') + " : " + linemanname}</div>
