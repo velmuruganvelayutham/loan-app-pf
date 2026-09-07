@@ -16,7 +16,7 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
   var duependingweekcheck = 0;
   var duependingcheckval = 0;
   var pendingweekcheck = 0;
-  
+
   var serialno = 0;
 
   //first = records.length > 0 ? pendingLoans[0] : "";
@@ -102,7 +102,7 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
   const totalPages = paginatedLoans.length;
   const totals = useMemo(() => {
     const total = pendingLoans.reduce((acc, item) => acc + (item.totalamount - item.collectedtotal), 0);
-    const totaldueamount = pendingLoans.reduce((acc, item) => acc+item.dueamount, 0);
+    const totaldueamount = pendingLoans.reduce((acc, item) => acc + item.dueamount, 0);
     const totalDuePending = pendingLoans.reduce((previous, current) => {
       if (current.collectedamountdate > 0 && current.collectedamountdate >= current.dueamount || current.topay <= 0 || current.finisheddatepending == 1) {
         return previous + 0;
@@ -185,7 +185,7 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
         return previousval + 0;
       }
     }, 0);
-    return { total, totalDuePending, totalPendingWeek ,totaldueamount};
+    return { total, totalDuePending, totalPendingWeek, totaldueamount };
   }, [pendingLoans]);
 
   const renderPage = (page) => {
@@ -215,8 +215,8 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
         {(lineno !== "" || isCitywiseModeEnabled) &&
           <div style={{ display: "flex", alignItems: "center" }} className='col-sm-12 fixed linechecking-print-margin'>
             {(bookno !== "" || isCitywiseModeEnabled) && (<div className='col-sm-3 fixed' style={{ whiteSpace: "normal", wordWrap: "break-word" }} >{t('city') + " : " + first.city}</div>)}
-             {bookno !== "" && (
-            <div className={bookno !== '' ? 'col-sm-3 fixed' : 'col-sm-6 fixed'}>{t('customer') + " : " + first.linemanname}</div>
+            {bookno !== "" && (
+              <div className={bookno !== '' ? 'col-sm-3 fixed' : 'col-sm-6 fixed'}>{t('customer') + " : " + first.linemanname}</div>
             )}
             <div className='col-sm-2 fixed'>{t('line') + " : " + (pendingLoans.length > 0 ? first.lineno : "")}</div>
             {bookno !== "" && (<div className='col-sm-2 fixed'>{t("bookno") + " : " + (pendingLoans.length > 0 ? first.bookno : "")}</div>)}
@@ -252,8 +252,8 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
 
               {bond && <th style={{ fontSize: "11px", width: "5%" }}>{t('city')}</th>}
 
-              <th style={{ fontSize: "9px", width: "4%",textAlign: "center" }} >
-              {isCitywiseModeEnabled ? t('dueshort') : t('enddate')}
+              <th style={{ fontSize: "9px", width: "4%", textAlign: "center" }} >
+                {isCitywiseModeEnabled ? t('dueshort') : t('enddate')}
               </th>
               <th style={{ fontSize: "11px", width: "6%", textAlign: "center" }}>
                 {t('loanamount')}
@@ -322,26 +322,33 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
                   }
                   pendingweektotal = pendingweektotal + parseFloat(pendingweek);
                   pageduetotal = pageduetotal + customer.dueamount;
-
+                  const isFinished =(new Date(customer.finisheddate) < new Date());
+                  //console.log("isFinished", isFinished, customer.finisheddate, new Date());
+                  const style = {
+                    backgroundColor: isFinished ? "black" : "white",
+                    color: isFinished ? "white" : "black",
+                    fontSize: "11px",
+                  };
                   return (
                     <tr className='linechecking'>
                       <td></td>
                       <td style={{ fontSize: "11px", textAlign: "center" }} className='text-nowrap overflow-hidden' id='nowidth'>{serialno}</td>
                       <td style={{ fontSize: "11px" }} className='text-nowrap overflow-hidden'>{dateFormatdd(customer.startdate)}</td>
-                      <td style={{ fontSize: "11px" }} className='text-nowrap overflow-hidden'>{customer.loannumber}</td>
+                      <td className='text-nowrap overflow-hidden' style={style} >{customer.loannumber}</td>
                       <td style={{ fontSize: "11px" }} className='text-nowrap overflow-hidden'>{customer.customer}</td>
                       <td style={{ fontSize: "11px", width: "1%" }} >{customer.relationtype == 0 ? t('fathershort') : t('husbandshort')}</td>
                       <td style={{ fontSize: "11px", width: "12%" }} className='text-nowrap overflow-hidden'>{customer.fathername}</td>
 
-                      <td style={{fontSize: "10px",
-              whiteSpace: isCitywiseModeEnabled ? "normal" : "nowrap",
-              overflow: isCitywiseModeEnabled ? "visible" : "hidden",
-    wordBreak: "normal",
-    overflowWrap: "break-word",
-     }} >  {bond ? customer.bond : customer.address.trim()}</td>
+                      <td style={{
+                        fontSize: "10px",
+                        whiteSpace: isCitywiseModeEnabled ? "normal" : "nowrap",
+                        overflow: isCitywiseModeEnabled ? "visible" : "hidden",
+                        wordBreak: "normal",
+                        overflowWrap: "break-word",
+                      }} >  {bond ? customer.bond : customer.address.trim()}</td>
                       {bond ? <td style={{ fontSize: "11px" }}>{customer.cheque}</td> : <td style={{ fontSize: "12px", wordWrap: "break-word", padding: "0px", margin: "0px", whiteSpace: "normal", minHeight: customer.mobileno && customer.mobileno.toString().split('\n').length > 1 ? "auto" : "15px", maxHeight: customer.mobileno && customer.mobileno.toString().split('\n').length > 1 ? "60px" : "auto" }}>{customer.mobileno}</td>}
-                      {bond && <td style={{ fontSize: "11px"}} className='text-nowrap overflow-hidden'>{customer.referencecity}</td>}
-                        <td style={{ fontSize: "11px" }} className='text-nowrap overflow-hidden'>{isCitywiseModeEnabled ? customer.dueamount : dateFormatdd(customer.finisheddate)}</td>
+                      {bond && <td style={{ fontSize: "11px" }} className='text-nowrap overflow-hidden'>{customer.referencecity}</td>}
+                      <td style={{ fontSize: "11px" }} className='text-nowrap overflow-hidden'>{isCitywiseModeEnabled ? customer.dueamount : dateFormatdd(customer.finisheddate)}</td>
                       <td style={{ fontSize: "11px", textAlign: "center" }} className='text-nowrap overflow-hidden'>{pending}</td>
                       <td style={{ fontSize: "11px", textAlign: "center" }} className='text-nowrap overflow-hidden'>{duepending > 0 ? duepending : ""}</td>
                       {
@@ -373,9 +380,9 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
               <td></td>
               <td ></td>
               <td ></td>
-              <td className='fw-bold' style={{ fontSize: "10px", textAlign: "center" }}>{isCitywiseModeEnabled?t('pagetotal'):""}</td>
+              <td className='fw-bold' style={{ fontSize: "10px", textAlign: "center" }}>{isCitywiseModeEnabled ? t('pagetotal') : ""}</td>
               {bond && <td></td>}
-              <td className='fw-bold' style={{ fontSize: "10px", textAlign: "center" }}>{isCitywiseModeEnabled?pageduetotal: t('pagetotal')}</td>
+              <td className='fw-bold' style={{ fontSize: "10px", textAlign: "center" }}>{isCitywiseModeEnabled ? pageduetotal : t('pagetotal')}</td>
               <td className='fw-bold' style={{ fontSize: "11px", textAlign: "center" }}>{pagetotal}</td>
               <td className='fw-bold' style={{ fontSize: "11px", textAlign: "center" }}>{pendingtotal}</td>
               <td className='fw-bold' style={{ fontSize: "11px", textAlign: "center" }}>{pendingweektotal}</td>
@@ -394,9 +401,9 @@ const ListLineChecking = ({ pendingLoans, date, company, isPrinting, bookno, lin
               <td></td>
               <td></td>
               <td></td>
-              <td className='fw-bold' style={{ fontSize: "11px", textAlign: "center" }}>{isCitywiseModeEnabled?t('totalcount'):""}</td>
+              <td className='fw-bold' style={{ fontSize: "11px", textAlign: "center" }}>{isCitywiseModeEnabled ? t('totalcount') : ""}</td>
               {bond && <td></td>}
-              <td className='fw-bold' style={{ fontSize: "13px", textAlign: "center" }}>{isCitywiseModeEnabled?totals.totaldueamount: t('totalcount')}</td>
+              <td className='fw-bold' style={{ fontSize: "13px", textAlign: "center" }}>{isCitywiseModeEnabled ? totals.totaldueamount : t('totalcount')}</td>
               <td className='fw-bold' style={{ fontSize: "13px", textAlign: "center" }}>{totals.total}</td>
               <td className='fw-bold' style={{ fontSize: "13px", textAlign: "center" }}>{totals.totalDuePending}</td>
               <td className='fw-bold' style={{ fontSize: "13px", textAlign: "center" }}>{totals.totalPendingWeek.toFixed(2)}</td>
